@@ -1,5 +1,7 @@
 /**
  * Armazena os metadados para a implementação da tabela cliente.
+ * Estes dados armazenados aqui facilita a manutenção e alteraçõo
+ * dos dados no SGBD.
  */
 class SQLiteClienteMetaDados {
   /**

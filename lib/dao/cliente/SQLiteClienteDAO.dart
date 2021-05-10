@@ -8,6 +8,17 @@ import 'package:flutter_cadastro_cliente_v2/entidade/Cliente.dart';
 
 /**
  *  Implementação do DAO para cliente com SQLite.
+ *  Gerencia os dados de Cliente no SGBD SQLite.
+ *
+ *  Os método são *Future" pois é usado para representar um valor potencial,
+ *  ou erro, que estará disponível em algum momento no futuro.
+ *  Usando um *Future*, podemos tratar os erros semelhantes ao esquema que *Try* e *Catch*.
+ *
+ *  Como estamos usando SQLite precisamos a biblioteca sqflite.
+ *  A instalação da biblioteca deve ocorrer na pasta raíz  do projeto com o seguinte comando:
+ *  $ flutter pub add sqflite
+ *  Caso queira atualizar a versão, use o comando:
+ *  $ flutter pub upgrade sqflite
  */
 class SQLiteClienteDAO extends SQLiteDAOFactory implements ClienteDAO {
   //Instância do SQLiteBDHelper a ser utilizado no DAO
@@ -56,10 +67,15 @@ class SQLiteClienteDAO extends SQLiteDAOFactory implements ClienteDAO {
 
   /**
    * Insere um registro no banco de dados
+   * @param obj Objeto que possui os dados a serem incluídos.
+   * @return O resultado da inclusão.
    */
   Future<int> incluir(Cliente cliente) async {
     Database db = await dbHelper.getDatabase;
-    return await db.insert(SQLiteClienteMetaDados.TABLE, cliente.getRow);
+    return await db.insert(SQLiteClienteMetaDados.TABLE, cliente.getMapColunasValores);
+    // O parâmetro  *ConflictAlgorithm.replace*, significa que não vai ter erro caso
+    // encontre um objeto com a mesma chave, mas apenas substitui o objeto existente pelo novo.
+    return await db.insert(SQLiteClienteMetaDados.TABLE, cliente.getMapColunasValores, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /**
@@ -119,18 +135,22 @@ class SQLiteClienteDAO extends SQLiteDAOFactory implements ClienteDAO {
   Future<int> alterar(Cliente cliente) async {
     Database db = await dbHelper.getDatabase;
     String id = cliente.getClienteId;
-    return await db.update(SQLiteClienteMetaDados.TABLE, cliente.getRow,
+    return await db.update(SQLiteClienteMetaDados.TABLE, cliente.getMapColunasValores,
         where: SQLiteClienteMetaDados.colunaClienteId + ' = ?',
         whereArgs: [id]);
   }
 
   /**
-   *  Exclui a linha especificada pelo id. O número de registros afetadas
-   *  retornada. Isso deve ser igual a 1, contanto que a linha exista.
+   *  Exclui a linha especificada da tabela pelo id(Chave primária).
+   *  O número de registros afetadas retornada.
+   *  Isso deve ser igual a 1, contanto que a linha exista.
    */
   Future<int> excluir(Cliente cliente) async {
     Database db = await dbHelper.getDatabase;
     String id = cliente.getClienteId;
+    // No *where* é colocado a condição indicando que linhas devem ser excluídas.
+    // O parâmetro *whereArgs* é o valor que será substituído pelo curinga (?) do *where*.
+    // É possível utilizar vários curingas. Basta colocar todos eles no vetor onde está o *id*.
     return await db.delete(SQLiteClienteMetaDados.TABLE,
         where: SQLiteClienteMetaDados.colunaClienteId + ' = ?',
         whereArgs: [id]);

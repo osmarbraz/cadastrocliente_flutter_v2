@@ -46,7 +46,7 @@ class Cliente {
   /**
    * No Map row é especificado o nome da coluna e o valor da coluna.
    */
-  Map<String, dynamic> get getRow {
+  Map<String, dynamic> get getMapColunasValores {
     Map<String, dynamic> linha = {
       SQLiteClienteMetaDados.colunaClienteId: getClienteId,
       SQLiteClienteMetaDados.colunaNome: getNome,
